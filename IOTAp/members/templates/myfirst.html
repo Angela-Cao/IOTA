@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="{% static 'myfirst.css' %}" />
+<link rel="stylesheet" href="{% static 'dropdown.css' %}" />
+<script src="{% static 'js/dom.js' %}"></script>
+
+<body>
+    <div class="dropdownMenu">
+        <button class="menubtn buttoncolor-homepg">MENU</button>
+        <div class="btnline"></div>
+        <div class="dropdownContent">
+            <a href="#">Link 1</a><br />
+            <a href="#">Link 2</a><br />
+            <a href="#">Link 3</a><br />
+        </div>
+    </div>
+
+    <div class="pageContent">
+        <h1>IOTA</h1>
+
+        <div class="playComponent">
+            <img src="../static/bar.svg" alt="music playing bar" />
+
+            <div class="playerButtons">
+                <img src="../static/ff-left.svg" alt="fast forward left button" class="ffLeft" />
+                <a href="{% url 'TextView' %}">
+                    <img src="../static/playbutton.svg" alt="play button" class="play_button" />
+                </a>
+
+                <img src="../static/ff-right.svg" alt="fast forward right button" class="ffRight" />
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <link rel="stylesheet" href="{% static 'second_page.css' %}">
+    <link rel="stylesheet" href="{% static 'dropdown.css' %}" />
+<body>
+    <div class="dropdownMenu">
+        <button class="menubtn buttoncolor-secondpg">MENU</button>
+        <div class="btnline"></div>
+        <div class="dropdownContent">
+            <a href="#">Link 1</a><br />
+            <a href="#">Link 2</a><br />
+            <a href="#">Link 3</a><br />
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}        
+        <br>
+        {{ form.as_p }}
+        <div class="submit_button"><button type="submit">Submit</button></div>
+    </form>
+</body>
+</html>

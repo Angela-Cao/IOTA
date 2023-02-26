@@ -1,0 +1,44 @@
+/* BODY */
+body {
+  display: grid;
+  grid-template-rows: 1fr 9fr;
+  background: #F7F3E7;
+  padding: 3rem;
+}
+
+/* Custom CSS for the submit button */
+.submit_button button[type="submit"] {
+  background-color: #FFDE67;
+  color: black;
+  font-family: "Trebuchet MS";
+  padding: 12px 20px;
+  border: black;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+form {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  padding: 20px;
+}
+  
+/* Custom CSS for the submit button */
+.submit_button button[type="submit"] {
+  background-color: #FFDE67;
+  color: black;
+  font-family: "Trebuchet MS";
+  padding: 12px 20px;
+  border: black;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
+
+
+
+
