@@ -100,7 +100,6 @@ def status(df):
 def FormView(request):
     if request.method=='POST':
         form=CustomerForm(request.POST or None)
-
         if form.is_valid():
             Gender = form.cleaned_data['gender']
             Age = form.cleaned_data['age']
@@ -120,11 +119,10 @@ def TextView(request):
             Text = form.cleaned_data['text']
             df=pd.DataFrame({'text':[Text]})
             file_index = match_music(Text)
-            audio_file = './data/MEMD_audio/'+str(round(file_index))+'.mp3'
-            playsound(audio_file) 
-            # return render(request, 'status.html', {"data": audio_file}) 
-                       
-            
+            audio_file = 'MEMD_audio/'+str(round(file_index))+'.mp3'
+            # playsound(audio_file)
+            #     audio_file = 'MEMD_audio/2.mp3'                                           
+            return render(request, 'status.html', {"data": audio_file, "Text":Text}) 
     form=TextForm()
     return render(request, 'second_page.html', {'form':form})
 

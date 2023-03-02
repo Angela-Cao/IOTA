@@ -14,30 +14,28 @@ from skfda.misc.kernels import uniform
 from skfda.preprocessing.smoothing import KernelSmoother
 from skfda.preprocessing.smoothing.validation import SmoothingParameterSearch
 
-#set up
+#NRC VAD set up
 nrc_set = pd.read_csv (r'./data/NRC-VAD-Lexicon.csv')
 
 # Convert two columns to a dictionary
 d = nrc_set.set_index('Word').T.to_dict('list')
 
-
+#returns 1st item of "word" in dictionar "d"
 def v(word):
   return(d[word][0])
 
 
-
+#creates list "windows" to store resulting windows
 def window_moving(lst, window_size, step_size):
     windows = []
     for i in range(0, len(lst), step_size):
-#        print(i)
         end = i + window_size
         if end > len(lst):
             break
         windows.append(lst[i:end])
     return windows
 
-
-
+#computes sum of valance values igw
 def window_valence(window):
   step_size = 2
   w_size = len(window)
@@ -47,12 +45,12 @@ def window_valence(window):
     if window[i] in d.keys():
         sum = sum+v(window[i])
         k = k+1
-#  return(step_size*sum/w_size)
+  #returns avg valance igw
   return(sum/max(1,k))
 
 
 
-
+#computes sum of arousal values igw
 def window_arousal(window):
   step_size = 2
   w_size = len(window)
@@ -62,10 +60,10 @@ def window_arousal(window):
     if window[i] in d.keys():
         sum = sum+d[window[i]][1]
         k = k+1 
-#  return(step_size*sum/w_size)
+  #returns avg arousal igw
   return(sum/max(1,k))
 
-
+#finds max valance igw
 def window_valence_2(window):
   max = 0
   for i in range(0,len(window)):
@@ -75,7 +73,7 @@ def window_valence_2(window):
         max = v_val        
   return(max)
 
-
+#returns "time" list, "count" values as 0.5 intervals
 def time_grids():
   count = 60
   time = []
@@ -84,7 +82,7 @@ def time_grids():
     time.append(value)
   return(time)
 
-
+#computes avg valance&arousal of given text through moving windows, returns df
 def text2va(text):   
   word = text.split(" ")
   windows = window_moving(word, 7, 2)
@@ -98,6 +96,7 @@ def text2va(text):
   print(df)
   return(df)
 
+#smooth v values in df w/ kernel smoother
 def smooth_valence(df):
   time = time_grids()
   count = len(time)
@@ -126,7 +125,7 @@ def smooth_valence(df):
   nw.fit(fd_text)
   return(nw.transform(fd_text))
 
-
+#smooth a values in df w/ kernel smoother
 def smooth_arousal(df):
   time = time_grids()
   count = len(time)
@@ -150,33 +149,13 @@ def smooth_arousal(df):
   nw.fit(fd_text)
   return(nw.transform(fd_text))
 
-
-# #with open('./data/story_3pigs.txt', 'r') as file:
-# with open('./data/littleMatchGirl.txt', 'r') as file:
-  
-#   # Read the contents of the file
-#   text = file.read()
-#   df_va = text2va(text)
-#   df_valence = smooth_valence(df_va)
-#   df_arousal = smooth_arousal(df_va)
-
-#   kmeans_valence = pickle.load(open("./models/kmeans_valence.pkl", 'rb'))
-#   kmeans_arousal = pickle.load(open("./models/kmeans_arousal.pkl", 'rb'))            
-#   print(kmeans_valence.predict(df_valence))
-
-
+#calculates Euclidean distance of a&b
 def dist(a,b):
   distance = np.linalg.norm(a - b)
   return(distance)
 
-# print(df_valence.data_matrix[0][0])
-
-
-#def match_music(df_valence, df_arousal):
+#convert text to v&a, smooth values, calculates distance
 def match_music(text):
-  #with open('./data/littleMatchGirl.txt', 'r') as file:
-  # Read the contents of the file
-#    text = file.read()
   df_va = text2va(text)
   df_valence = smooth_valence(df_va)
   df_arousal = smooth_arousal(df_va)
@@ -199,17 +178,4 @@ def match_music(text):
       min = dist_current
       k = i
   return(arousal_data.iloc[k][0])
-
-#file_name = "./data/the_happy_family.txt"
-#with open(file_name, 'r') as file:
-#file_id = match_music(file_name)
-#print(file_id)
-
-#from playsound import playsound
-
-# Play an MP3 file
-#playsound('./data/MEMD_audio/'+str(round(arousal_data.iloc[k][0]))+'.mp3')
-#playsound('./data/MEMD_audio/'+str(round(file_id))+'.mp3')
-
-
 

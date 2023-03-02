@@ -2,17 +2,16 @@
 <!DOCTYPE html>
 <html>
 <link rel="stylesheet" href="{% static 'myfirst.css' %}" />
-<link rel="stylesheet" href="{% static 'dropdown.css' %}" />
-<script src="{% static 'js/dom.js' %}"></script>
+<link rel="stylesheet" href="{% static 'dropdown_white.css' %}" />
+<script src="{% static 'js/menu.js' %}"></script>
 
 <body>
     <div class="dropdownMenu">
         <button class="menubtn buttoncolor-homepg">MENU</button>
         <div class="btnline"></div>
         <div class="dropdownContent">
-            <a href="#">Link 1</a><br />
-            <a href="#">Link 2</a><br />
-            <a href="#">Link 3</a><br />
+            <a href="{% url 'TextView' %}">Input Text</a><br />
+            <a href="#"></a><br />
         </div>
     </div>
 

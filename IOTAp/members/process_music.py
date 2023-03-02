@@ -15,25 +15,26 @@ from skfda.exploratory.visualization.clustering import (
 from skfda.ml.clustering import FuzzyCMeans, KMeans
 
 
-
+#scales valance values [-1,1]->[0,1]
 def scale(val):
   return((val+1)/2)
 
-
+#set up
 path = "./data/valence.csv"
 df_valence = pd.read_csv("./data/valence.csv",encoding='Latin-1')
 df_arousal = pd.read_csv("./data/arousal.csv",encoding='Latin-1')
-#df_valence.iloc[0][1:].plot()
-#plt.show()
 
+#count non-missing values
 valence_value = df_valence.iloc[0][1:]
 count = np.count_nonzero(~np.isnan(valence_value))
 count
 
+#apply scale function
 valence_value =  scale(valence_value)
 df_valence.iloc[:, 1:(count+1)] = scale(df_valence.iloc[:, 1:(count+1)].values)
 df_arousal.iloc[:, 1:(count+1)] = scale(df_arousal.iloc[:, 1:(count+1)].values)
 
+#creates list of time values
 time = []
 for i in range(count):
   value = 0.5*(i+1)
