@@ -1,0 +1,5 @@
+**/.DS_Store
+/myworld
+**/db.sqlite3
+**/__pycache__
+**/*.mp3

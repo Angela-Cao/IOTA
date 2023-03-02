@@ -1,24 +1,52 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+    <link rel="stylesheet" href="{% static 'dropdown_yellow.css' %}">
     <link rel="stylesheet" href="{% static 'second_page.css' %}">
-    <link rel="stylesheet" href="{% static 'dropdown.css' %}" />
+<head>  
+  </head>
 <body>
-    <div class="dropdownMenu">
+    <div class="dropdownMenu"> 
         <button class="menubtn buttoncolor-secondpg">MENU</button>
         <div class="btnline"></div>
         <div class="dropdownContent">
-            <a href="#">Link 1</a><br />
-            <a href="#">Link 2</a><br />
-            <a href="#">Link 3</a><br />
+            <a href="{% url 'myfirst' %}">Home</a><br />
+            <a href="#"></a><br />
+            <a href="#"></a><br />
         </div>
     </div>
 
+    <div class="form">    
     <form method="post">
         {% csrf_token %}        
         <br>
         {{ form.as_p }}
         <div class="submit_button"><button type="submit">Submit</button></div>
     </form>
+    </div>
+
+    <!-- <div class="text">    
+    {{Text}}
+    </div>   
+
+
+     <div class="contain">
+      <div class="container">
+       <div class="music-player">       
+        <!-- <div class="lecteur">     
+         <audio class="fc-media" style="width: 100%;" autoplay="autoplay">
+          <source src="{{MEDIA_URL}}{{data}}" type="audio/mp3"/>
+         </audio>
+       </div> 
+      </div>
+     </div> -->
+
+   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mediaelement/4.2.7/mediaelement-and-player.min.js">
+    </script>
+    <script src="{% static './script.js' %}">
+    </script>    
 </body>
 </html>

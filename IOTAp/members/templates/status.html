@@ -1,13 +1,52 @@
-<!DOCTYPE html>
 {% load static %}
+
+<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status</title>
-</head>
-<body>
-    <h2>Audio File Number: {{data}}</h2>
-</body>
+ <head>
+  <meta charset="utf-8"/>
+  <title>
+   My Music Player
+  </title>
+  <link rel="stylesheet" href="{% static 'dropdown_yellow.css' %}">
+  <link href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mediaelement/4.2.7/mediaelementplayer.min.css" rel="stylesheet"/>
+  <link href="{% static './style.css' %}" rel="stylesheet"/>
+ </head>
+ <body>
+  <div class="dropdownMenu"> 
+    <button class="menubtn buttoncolor-secondpg">MENU</button>
+    <div class="btnline"></div>
+    <div class="dropdownContent">
+        <a href="{% url 'myfirst' %}">Home</a><br />
+        <a href="{% url 'TextView' %}">Input Text</a><br />
+    </div>
+  </div>
+
+  <h1> Text to Audio </h1>
+  <h2> Text </h2>
+  <div>
+    {{Text}}
+    </div>
+  <h2> Audio </h2>
+  <div class="contain">
+     <div class="container">
+      <div class="music-player">       
+       <div class="lecteur">       
+        <audio class="fc-media" style="width: 100%;" autoplay="autoplay">
+        <source src="{{MEDIA_URL}}{{data}}" type="audio/mp3"/>
+        </audio>
+      </div>
+     </div>
+  </div>
+  <h2> Time-varying Text Emotion </h2>
+
+  <img src='data:image/png;base64,{{ chart }}'>
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mediaelement/4.2.7/mediaelement-and-player.min.js">
+  </script>
+  <script src="{% static './script.js' %}">
+  </script>
+ </body>
 </html>

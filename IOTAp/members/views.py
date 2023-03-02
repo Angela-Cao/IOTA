@@ -54,11 +54,20 @@ from django.contrib import messages
 
 from playsound import playsound
 
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import io, base64
+from django.db.models.functions import TruncDay
+from matplotlib.ticker import LinearLocator
+
 
 from .process_text import (
      text2va,
      smooth_valence,
      match_music,
+     plot_valence_arousal,
 )
 
 from .process_music import (
@@ -118,11 +127,23 @@ def TextView(request):
         if form.is_valid():
             Text = form.cleaned_data['text']
             df=pd.DataFrame({'text':[Text]})
-            file_index = match_music(Text)
-            audio_file = 'MEMD_audio/'+str(round(file_index))+'.mp3'
+            # file_index = match_music(Text)
+            # audio_file = 'MEMD_audio/'+str(round(file_index))+'.mp3'
+            audio_file = ""           
+
+            df_va,count = text2va(Text)
+            # fig = plot_va(df_av)
+            fig = plot_valence_arousal(df_va)
+            # fig_music = plot_music_va(i)
+
+            # fig, ax = plt.subplots(figsize=(10,4))
+            # ax.plot([0, 1, 3, 4, 5], [0, 1, 3, 4, 5], '--bo')
+            flike = io.BytesIO()
+            fig.savefig(flike)
+            b64 = base64.b64encode(flike.getvalue()).decode()
             # playsound(audio_file)
             #     audio_file = 'MEMD_audio/2.mp3'                                           
-            return render(request, 'status.html', {"data": audio_file, "Text":Text}) 
+            return render(request, 'status.html', {"data": audio_file, "Text":Text, "chart":b64}) 
     form=TextForm()
     return render(request, 'second_page.html', {'form':form})
 

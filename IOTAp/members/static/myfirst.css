@@ -1,0 +1,52 @@
+  /* BODY */
+body {
+  display: grid;
+  grid-template-rows: 1fr 9fr;
+  background: #FFDE67;
+  padding: 3rem;
+}
+
+.pageContent {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  row-gap: 2vh;
+}
+
+/* TITLE */
+h1 {
+  text-align: center;
+  font-family: "Verdana";
+  font-weight: 700;
+  font-size: 25vh;
+  line-height: 0.5vh;
+  letter-spacing: -0.03em;
+  color: #f7f3e7;
+}
+
+/* PLAYER */
+.playComponent {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  row-gap: 2vh;
+  justify-self: center;
+  align-items: start;
+}
+
+.playerButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-self: center;
+  align-items: start;
+  column-gap: 2em;
+}
+
+.ffLeft {
+  align-self: center;
+  justify-self: end;
+}
+
+.ffRight {
+  align-self: center;
+  justify-self: start;
+}

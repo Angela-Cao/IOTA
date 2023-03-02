@@ -63,6 +63,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.media",              # added to process media files
             ],
         },
     },
@@ -116,8 +117,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 import os
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_URL = 'members/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'members/static')]
+MEDIA_ROOT =os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+DATA_ROOT =os.path.join(BASE_DIR, 'data')
+DATA_URL = '/data/'
+
+
 
 
 # Default primary key field type
