@@ -98,10 +98,18 @@ def time_grids():
     time.append(value)
   return(time)
 
+def our_tokenizer(text):
+  # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+  # words = tokenizer.tokenize(text)
+  text0 = text.replace('?'," ").replace('.', " ").replace(',', " ").replace("!"," ")
+  # words = text.split()   
+  return(text0.split(' '))
 
-def text2va(text):   
-  tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-  words = tokenizer.tokenize(text)
+
+
+def text2va(words):   
+  # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+  # words = tokenizer.tokenize(text)
   valences = []
   arousal = []
   count = 0
@@ -119,15 +127,13 @@ def text2va(text):
   return(df,count)
 
 
-def text2va_window_smoothing(text):   
-  tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-  words = tokenizer.tokenize(text)
-  windows = window_moving(words, 20, 2)
+def text2va_window_smoothing(words):     
+  windows = window_moving(words, 8, 2)
   count = len(windows)
   valences = []
   arousal = []
   for i in range(0,len(windows)):
-    print(windows[i])
+    # print(windows[i])
     valences.append(window_valence_2(windows[i]))
     arousal.append(window_arousal_2(windows[i]))
   df = pd.DataFrame({'valence': valences, 'arousal': arousal})
@@ -138,7 +144,7 @@ def text2va_window_smoothing(text):
 
 def smooth_text_va(text_va):
 
-  bandwidth = 20
+  bandwidth = 5
   
   # time = time_grids()
   # count = len(time)
@@ -165,83 +171,51 @@ def smooth_text_va(text_va):
   nw.fit(fd_text)
   return(nw.transform(fd_text))
 
+valence_data = pickle.load(open("./data/valence_data.pkl", "rb"))
+arousal_data = pickle.load(open("./data/arousal_data.pkl", "rb"))
+smoothed_valence_data = pickle.load(open("./data/smoothed_valence_data.pkl", "rb"))
+smoothed_arousal_data = pickle.load(open("./data/smoothed_arousal_data.pkl", "rb"))
 
-import math
-def match_music_new(text):
+
+def match_music(df_va):
   # df_va,count = text2va(text)
-  df_va,count = text2va_window_smoothing(text)
-  # print(len(df_va))
-  valence_data = pickle.load(open("./data/valence_data_unscaled.pkl", "rb"))
-  arousal_data = pickle.load(open("./data/arousal_data_unscaled.pkl", "rb"))
-
-  text_l = len(df_va['valence'])
-  df_valence = smooth_valence(df_va)
-  df_arousal = smooth_arousal(df_va)
-  valence = df_valence.data_matrix[0,:,:]
-  arousal = df_arousal.data_matrix[0,:,:]  
-
-  print(valence)
-  print(arousal)
-
-  if text_l<60:
-    text_len = text_l
-  else:
-    freq = math.floor(text_l/60)
-    v_points = []
-    a_points = []
-    for i in range(0, text_l, freq):
-      v_points.append(valence[i])
-      a_points.append(arousal[i])
-    text_len = len(v_points)
-
-  num_rows = valence_data.shape[0]
-  min = 100000 
-  k = -1
-  for i in range(0, num_rows):
-    valence_value = valence_data.iloc[i][1:(text_len+1)]
-    dist_valence = dist(v_points,valence_value)
-    arousal_value = arousal_data.iloc[i][1:(text_len+1)]
-    dist_arousal = dist(a_points,arousal_value)
-    dist_current = dist_valence+dist_arousal 
-    if(dist_current<min):
-      min = dist_current
-      k = i
-  return(i, arousal_data.iloc[k][0])
-
-def match_music(text):
-  df_va,count = text2va(text)
   # df_va,count = text2va_window_smoothing(text)
   # print(len(df_va))
-  # text_l = len(df_va)
-  text_l = len(df_va['valence'])
+  df_valence = smooth_valence(df_va)
+  df_arousal = smooth_arousal(df_va)
+  df_valence = df_valence.data_matrix[:,:,0]
+  df_arousal = df_arousal.data_matrix[:,:,0]
+
+  text_l = len(df_arousal[0])
+  # print(text_l)
   if text_l<60:
     text_len = text_l
   else:
     text_len = 60
-  df_valence = smooth_valence(df_va[0:text_len])
-  df_arousal = smooth_arousal(df_va[0:text_len])
-  df_valence = df_valence.data_matrix[0][0]
-  df_arousal = df_arousal.data_matrix[0][0]
+  
+  # print("df_arousal is" )
+  # print(df_arousal[0][0:text_len])
+
   # kmeans_valence = pickle.load(open("./models/kmeans_valence.pkl", 'rb'))
   # kmeans_arousal = pickle.load(open("./models/kmeans_arousal.pkl", 'rb'))            
-  # valence_data = pickle.load(open("./data/valence_data.pkl", "rb"))
-  # arousal_data = pickle.load(open("./data/arousal_data.pkl", "rb"))
-  valence_data = pickle.load(open("./data/valence_data_unscaled.pkl", "rb"))
-  arousal_data = pickle.load(open("./data/arousal_data_unscaled.pkl", "rb"))
-
   num_rows = valence_data.shape[0]
   min = 100000 
   k = -1
   for i in range(0, num_rows):
-    valence_value = valence_data.iloc[i][1:(text_len+1)]
-    dist_valence = dist(df_valence,valence_value)
-    arousal_value = arousal_data.iloc[i][1:(text_len+1)]
-    dist_arousal = dist(df_arousal,arousal_value)
-    dist_current = dist_valence+dist_arousal 
+    valence_value = smoothed_valence_data.data_matrix[i,:,:]
+    # valence_data.iloc[i][1:(text_len+1)]
+    dist_valence = dist(df_valence[0][0:text_len],valence_value)
+    arousal_value = smoothed_arousal_data.data_matrix[i,:,:]
+    # arousal_data.iloc[i][1:(text_len+1)]
+    dist_arousal = dist(df_arousal[0][0:text_len],arousal_value)
+    dist_current = dist_valence+dist_arousal     
+    # print(dist_current)
+    # print(df_valence[0][0:text_len])
+    # print(valence_value)
     if(dist_current<min):
       min = dist_current
       k = i
-  return(i, arousal_data.iloc[k][0])
+  return(k, arousal_data.iloc[k][0])
 
 
 def smooth_valence(df):  
@@ -251,6 +225,7 @@ def smooth_arousal(df):
   return(smooth_text_va(df['arousal']))  
  
 def dist(a,b):
+  # print(pd.DataFrame({'a':a, 'b':b, 'd':a-b}))
   distance = np.linalg.norm(a - b)
   return(distance)
 
@@ -277,7 +252,7 @@ def plot_va(df_va):
   # df_valence = smooth_valence(df_va[0:text_len])
   # df_arousal = smooth_arousal(df_va[0:text_len])
   # Create a subplot with two plots side by side
-  fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+  fig, axs = plt.subplots(2, 1, figsize=(10, 5))
   axs[0].plot(time,df_va["valence"][0:count])
   axs[0].set_title('Valence')
   axs[1].plot(time,df_va["arousal"][0:count])
@@ -287,18 +262,23 @@ def plot_va(df_va):
 
 def plot_music_va(i):
   time = time_grids()
-  count = len(time)  
+  # count = len(time)  
   text_len = 60
-  valence_data = pickle.load(open("./data/valence_data.pkl", "rb"))
-  arousal_data = pickle.load(open("./data/arousal_data.pkl", "rb"))
+
   num_rows = valence_data.shape[0]
   valence_value = valence_data.iloc[i][1:(text_len+1)]
   arousal_value = arousal_data.iloc[i][1:(text_len+1)]
-  fig, axs = plt.subplots(1, 2, figsize=(10, 5))
-  axs[0].plot(time, valence_value)
-  axs[0].set_title('Valence')
-  axs[1].plot(time, arousal_value)
-  axs[1].set_title('Arousal')
+  smoothed_valence_value = smoothed_valence_data.data_matrix[i,:,:]
+  smoothed_arousal_value = smoothed_arousal_data.data_matrix[i,:,:]
+
+  fig, axs = plt.subplots(2, 1, figsize=(10, 5))
+  axs[0].plot(time, valence_value, linewidth='4', color='blue')
+  axs[0].plot(time, smoothed_valence_value, linewidth='4', color='red')
+  axs[0].set_ylabel('Valence')
+  axs[1].plot(time, arousal_value, linewidth='4', color='blue')
+  axs[1].plot(time, smoothed_arousal_value, linewidth='4', color='red')
+  axs[1].set_ylabel('Arousal')
+  axs[1].set_xlabel('Time')
   return(fig)
 
 
@@ -308,15 +288,15 @@ def plot_valence_arousal(df_va):
   time = range(0,nrow)
   df_valence = smooth_valence(df_va)  
   df_arousal = smooth_arousal(df_va)  
-  fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+  fig, axs = plt.subplots(2, 1, figsize=(10, 5))
   axs[0].plot(time,df_va["valence"][0:nrow],'bo')
   axs[0].plot(df_valence.grid_points[0], df_valence.data_matrix[0,:,:], linewidth='4', color='red')
-  axs[0].set_title('Valence')
+  # axs[0].set_title('Valence')
   axs[0].set_xlabel('Word Index')
   axs[0].set_ylabel('Valence')
   axs[1].plot(time,df_va["arousal"][0:nrow],'bo')
   axs[1].plot(df_arousal.grid_points[0],df_arousal.data_matrix[0,:,:], linewidth='4', color='red')
-  axs[1].set_title('Arousal')
+  # axs[1].set_title('Arousal')
   axs[1].set_xlabel('Word Index')
   axs[1].set_ylabel('Arousal')
   return(fig)
@@ -325,7 +305,7 @@ def plot_valence_arousal(df_va):
 def plot_smooth_va(df_va):
   output_points_v, df_valence = smooth_valence(df_va)
   output_points_a, df_arousal = smooth_arousal(df_va)  
-  fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+  fig, axs = plt.subplots(2, 1, figsize=(10, 5))
   axs[0].plot(output_points_v,df_valence,'bo')
   axs[0].set_title('Valence')
   axs[1].plot(output_points_a,df_arousal,'bo')
@@ -468,7 +448,7 @@ def plot_va_with_words(df_va):
   df_arousal = smooth_arousal(df_va)  
 
   # Create a scatter plot
-  fig, axs = plt.subplots(1, 1, figsize=(10, 5))
+  fig, axs = plt.subplots(1, 1, figsize=(10, 8))
   plt.plot(valence, arousal,'bo')
   v_vals = df_valence.data_matrix[0,:,:]
   a_vals = df_arousal.data_matrix[0,:,:]

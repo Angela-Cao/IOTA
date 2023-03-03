@@ -66,18 +66,65 @@ def kMeans_music(df, n_clusters, seed):
 
 def kMeans_valence(n_clusters, seed):
   valence_data = df_valence.iloc[:, 0:(count+1)]
-  pickle.dump(valence_data, open("./data/valence_data_unscaled.pkl", "wb"))
+  pickle.dump(valence_data, open("./data/valence_data.pkl", "wb"))
   return(kMeans_music(df_valence.iloc[:, 1:(count+1)].values, n_clusters, seed))
 
 def kMeans_arousal(n_clusters, seed):
   arousal_data = df_arousal.iloc[:, 0:(count+1)]
-  pickle.dump(arousal_data, open("./data/arousal_data_unscaled.pkl", "wb"))
+  pickle.dump(arousal_data, open("./data/arousal_data.pkl", "wb"))
   return(kMeans_music(df_arousal.iloc[:, 1:(count+1)].values, n_clusters, seed))
 
 n_clusters = 3
 seed = 2
 kmeans_valence = kMeans_valence(n_clusters, seed)
 kmeans_arousal = kMeans_arousal(n_clusters, seed)
+
+
+############# Preprocessing music curves using kernel smoothing ##############
+import skfda
+from skfda.misc.kernels import uniform
+from skfda.preprocessing.smoothing import KernelSmoother
+from skfda.preprocessing.smoothing.validation import SmoothingParameterSearch
+from skfda.misc.hat_matrix import (
+    KNeighborsHatMatrix,
+    LocalLinearRegressionHatMatrix,
+    NadarayaWatsonHatMatrix,
+)
+
+valence_data = pickle.load(open("./data/valence_data.pkl", "rb"))
+arousal_data = pickle.load(open("./data/arousal_data.pkl", "rb"))
+
+fd_valence = skfda.FDataGrid(
+    data_matrix=valence_data.iloc[:, 1:(count+1)],
+    grid_points=time,
+)
+# print(fd_valence)
+
+fd_arousal = skfda.FDataGrid(
+    data_matrix=arousal_data.iloc[:, 1:(count+1)],
+    grid_points=time,
+)
+# print(fd_arousal)
+
+#  output_points = range(np.min(my_time), np.max(my_time))
+bandwidth = 3
+nw = KernelSmoother(
+    kernel_estimator=NadarayaWatsonHatMatrix(bandwidth=bandwidth),
+    output_points =  time  
+  ) 
+nw.fit(fd_valence)
+smoothed_valence_data = nw.transform(fd_valence)
+  
+nw_a = KernelSmoother(
+    kernel_estimator=NadarayaWatsonHatMatrix(bandwidth=bandwidth),
+    output_points =  time  
+  ) 
+nw_a.fit(fd_arousal)
+smoothed_arousal_data = nw.transform(fd_arousal)
+
+pickle.dump(smoothed_valence_data, open("./data/smoothed_valence_data.pkl", "wb"))
+pickle.dump(smoothed_arousal_data, open("./data/smoothed_arousal_data.pkl", "wb"))
+
 
 
 

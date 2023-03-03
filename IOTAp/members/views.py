@@ -68,13 +68,16 @@ from .process_text import (
      smooth_valence,
      match_music,
      plot_valence_arousal,
+     plot_music_va,     
+     plot_va_with_words,
+     text2va_window_smoothing,    
+     our_tokenizer,
 )
 
 from .process_music import (
      kMeans_music,
      kMeans_valence,
      kMeans_arousal,
-     scale,
 )
 
 def members(request):
@@ -127,23 +130,35 @@ def TextView(request):
         if form.is_valid():
             Text = form.cleaned_data['text']
             df=pd.DataFrame({'text':[Text]})
-            # file_index = match_music(Text)
-            # audio_file = 'MEMD_audio/'+str(round(file_index))+'.mp3'
-            audio_file = ""           
+            words = our_tokenizer(Text)
+            # df_va,count = text2va_window_smoothing(words)
+            df_va,count = text2va(words)
+            music_index,file_index = match_music(df_va)            
+            audio_file = 'MEMD_audio/'+str(round(file_index))+'.mp3'
+            
 
-            df_va,count = text2va(Text)
-            # fig = plot_va(df_av)
             fig = plot_valence_arousal(df_va)
-            # fig_music = plot_music_va(i)
+            fig_va = plot_va_with_words(df_va)
+
+            flike_va = io.BytesIO()
+            fig_va.savefig(flike_va)
+            b64_va = base64.b64encode(flike_va.getvalue()).decode()
+            
+            # fig_music = plot_va_with_words(df_va)
+            fig_music = plot_music_va(music_index)
 
             # fig, ax = plt.subplots(figsize=(10,4))
             # ax.plot([0, 1, 3, 4, 5], [0, 1, 3, 4, 5], '--bo')
             flike = io.BytesIO()
             fig.savefig(flike)
             b64 = base64.b64encode(flike.getvalue()).decode()
-            # playsound(audio_file)
-            #     audio_file = 'MEMD_audio/2.mp3'                                           
-            return render(request, 'status.html', {"data": audio_file, "Text":Text, "chart":b64}) 
+
+            flike_music = io.BytesIO()
+            fig_music.savefig(flike_music)
+            b64_music = base64.b64encode(flike_music.getvalue()).decode()
+        
+            # playsound(audio_file) 
+            return render(request, 'status.html', {'Text':Text, "data": audio_file, "chart": b64, "chart_va": b64_va, "chart_music": b64_music})                                    
     form=TextForm()
     return render(request, 'second_page.html', {'form':form})
 

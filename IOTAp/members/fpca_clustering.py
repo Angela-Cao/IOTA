@@ -124,6 +124,7 @@ fd_arousal = skfda.FDataGrid(
     grid_points=time,
 )
 
+
 fd_valence_d = fd_valence.derivative()
 fd_arousal_d = fd_arousal.derivative()
 
@@ -137,7 +138,7 @@ fd = skfda.FDataGrid(
 
 
 
-n_components = 4
+n_components = 3
 
 def get_fpca_score(fd_music):
   basis_fd = fd_music.to_basis(BSplineBasis(n_basis=5))
@@ -163,9 +164,9 @@ raw_scores = np.concatenate((score_valence, score_arousal),axis=1)
 
 # raw_scores =  score_arousal
 
-print(raw_scores)
+# print(raw_scores)
 
-print(raw_scores.shape)
+# print(raw_scores.shape)
 
 def mm_normalize(data):
   (nrows, ncols) = data.shape  # (20,4)
@@ -200,7 +201,7 @@ from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
 # fd_music[kmeans_pcscore.labels_==3]
-n_clusters = 12
+n_clusters = 6
 kmeans_pcscore = KMeans(init="random", n_clusters=n_clusters, n_init=10, max_iter=1000, random_state=102)
 kmeans_pcscore.fit(scores)
 print(kmeans_pcscore.labels_)
@@ -214,20 +215,76 @@ print(kmeans_pcscore.labels_)
 # fd_arousal[kmeans_pcscore.labels_==cluster_index].plot()
 
 # cluster_index = 0
+
+
+import pandas as pd
+#set up
+nrc_set = pd.read_csv (r'./data/NRC-VAD-Lexicon.csv')
+nrc_set['Valence'] = (nrc_set['Valence']-0.5)*2
+nrc_set['Arousal'] = (nrc_set['Arousal']-0.5)*2
+
+
+# Convert two columns to a dictionary
+d = nrc_set.set_index('Word').T.to_dict('list')
+
+words = ['tense', 'distressed', 'frustrated', 'depressed', 'sad', 'miserable', 'sad', 'gloomy', 'afraid', 
+         'alarmed', 'angry', 'annoyed', 
+         'bored', 'tired', 'drowsy', 'sleepy',
+         'aroused', 'excited', 'astonished', 'delighted', 'glad', 'pleased', 'happy', 'satisfied', 
+         'content', 'relaxed', 'tranquil', 'ease', 'calm']
+
+valence = []
+arousal = []
+for word in words:  
+  temp = d[word]
+  valence.append(temp[0])
+  arousal.append(temp[1])
+
+
 def show_cluster(cluster_index):
+  # fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+
   mean_valence = skfda.exploratory.stats.mean(fd_valence[kmeans_pcscore.labels_==cluster_index])  
   fig1 = mean_valence.plot()
 
   mean_arousal = skfda.exploratory.stats.mean(fd_arousal[kmeans_pcscore.labels_==cluster_index])
-  mean_arousal.plot(fig1)
+  mean_arousal.plot(fig1)  
   plt.xlabel('Time')  
   # plt.ylabel('Valence/Arousal')  
   plt.legend(['Valence', 'Arousal'])
   plt.savefig('Cluster'+str(cluster_index)+'.pdf')  
-  # plt.show()
+  # plt.show()  
+  # return(fig)
 
-# for i in range(0,n_clusters):
-#   show_cluster(i)
+
+
+for i in range(0,n_clusters):
+  show_cluster(i)
+
+# Create a scatter plot
+  
+  # plt.plot(valence, arousal,'bo')
+  # v_vals = df_valence.data_matrix[0,:,:]
+  # a_vals = df_arousal.data_matrix[0,:,:]
+  # plt.plot(v_vals, a_vals, 'red', linewidth='4') 
+
+  # # plt.arrow(v_vals[len(v_vals)-2], a_vals[len(a_vals)-2],v_vals[len(v_vals)-1]-v_vals[len(v_vals)-2], a_vals[len(a_vals)-1]-a_vals[len(a_vals)-2],  width=0.2)
+
+  # # Set x and y limits centered around 0
+  # plt.xlim(-1.2, 1.2)
+  # plt.ylim(-1.2, 1.2)
+
+  # # Add a horizontal and vertical line at 0
+  # plt.axhline(y=0, color='k')
+  # plt.axvline(x=0, color='k')
+
+  # # Add labels for x and y axes
+  # plt.xlabel('Valence')
+  # plt.ylabel('Arousal')
+  # # # Add text labels for each point
+  # for i  in range(0,len(words)):
+  #   plt.text(valence[i]-0.1, arousal[i]+0.03, words[i],fontsize=12, color='black', fontweight='bold')  
+
 
 
 
@@ -244,78 +301,131 @@ def show_cluster_2dim(cluster_index):
   plt.ylim([0.2, 0.8])  
   plt.xlabel('Valence')  
   plt.ylabel('Arousal')  
+  # Set x and y limits centered around 0
+  plt.xlim(-1.2, 1.2)
+  plt.ylim(-1.2, 1.2)
+
+  # Add a horizontal and vertical line at 0
+  plt.axhline(y=0, color='k')
+  plt.axvline(x=0, color='k')
+
+  # Add labels for x and y axes
+  plt.xlabel('Valence')
+  plt.ylabel('Arousal')
+  # # Add text labels for each point
+  for i  in range(0,len(words)):
+    plt.text(valence[i]-0.1, arousal[i]+0.03, words[i],fontsize=12, color='black', fontweight='bold')  
+
   # plt.legend(['Valence', 'Arousal'])
   plt.savefig('Cluster'+str(cluster_index)+'_2dim.pdf')  
   # plt.savefig('Cluster'+str(cluster_index)+'_2dim_median.pdf')  
 
-  
   # plt.show()
 
+# for i in range(0,n_clusters):
+#   show_cluster_2dim(i)
+
+
+
+def show_clusters(cluster_index):
+  mean_valence = skfda.exploratory.stats.mean(fd_valence[kmeans_pcscore.labels_==cluster_index])  
+  # mean_valence = skfda.exploratory.stats.depth_based_median(fd_valence[kmeans_pcscore.labels_==cluster_index])  
+  mean_arousal = skfda.exploratory.stats.mean(fd_arousal[kmeans_pcscore.labels_==cluster_index])
+  # mean_arousal = skfda.exploratory.stats.depth_based_median(fd_valence[kmeans_pcscore.labels_==cluster_index])  
+
+  # fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+
+  # plt.plot(valence, arousal,'bo', linewidth=0.5)
+  plt.plot(mean_valence.data_matrix[0], mean_arousal.data_matrix[0], linewidth='2')
+  plt.xlabel('Valence')  
+  plt.ylabel('Arousal')  
+  # Set x and y limits centered around 0
+  plt.xlim(-1, 1)
+  plt.ylim(-1, 1)
+
+  # Add a horizontal and vertical line at 0
+  plt.axhline(y=0, color='k')
+  plt.axvline(x=0, color='k')
+
+  # Add labels for x and y axes
+  plt.xlabel('Valence')
+  plt.ylabel('Arousal')
+  # # Add text labels for each point
+  for i  in range(0,len(words)):
+    plt.text(valence[i], arousal[i], words[i],fontsize=6, color='black')  
+
+  # plt.legend(['Valence', 'Arousal'])
+  # plt.savefig('Cluster'+str(cluster_index)+'_2dim.pdf')  
+  # plt.savefig('Cluster'+str(cluster_index)+'_2dim_median.pdf')  
+
+
+fig, axs = plt.subplots(1, 1, figsize=(6, 6))
 for i in range(0,n_clusters):
-  show_cluster_2dim(i)
+  show_clusters(i)
+plt.savefig('Clusters_2dim.pdf')  
 
 
-from sklearn.model_selection import train_test_split
-import skfda
-from skfda.misc.metrics import PairwiseMetric, linf_distance
-from skfda.ml.classification import RadiusNeighborsClassifier
+# from sklearn.model_selection import train_test_split
+# import skfda
+# from skfda.misc.metrics import PairwiseMetric, linf_distance
+# from skfda.ml.classification import RadiusNeighborsClassifier
 
-X_train, X_test, y_train, y_test = train_test_split(
-    # fd_valence,
-    # fd_arousal,    
-    fd,
-    kmeans_pcscore.labels_,
-    test_size=0.25,
-    shuffle=True,
-    stratify=kmeans_pcscore.labels_,
-    random_state=0,
-)
-
-
-radius = 0.5
-sample = X_test[0]  # Center of the ball
-
-# fig = X_train.plot(group=y_train, group_colors=['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6'])
-
-# Plot ball
-# sample.plot(fig=fig, color='red', linewidth=3)
-# lower = sample - radius
-# upper = sample + radius
-# fig.axes[0].fill_between(
-#     sample.grid_points[0],
-#     lower.data_matrix.flatten(),
-#     upper.data_matrix[0].flatten(),
-#     alpha=0.25,
-#     color='C1',
-# )
-# plt.show()
-
-
-# Creation of pairwise distance
-l_inf = PairwiseMetric(linf_distance)
-distances = l_inf(sample, X_train)[0]  # L_inf distances to 'sample'
-
-# # Plot samples in the ball
-# fig = X_train[distances <= radius].plot(color='C0')
-# sample.plot(fig=fig, color='red', linewidth=3)
-# fig.axes[0].fill_between(
-#     sample.grid_points[0],
-#     lower.data_matrix.flatten(),
-#     upper.data_matrix[0].flatten(),
-#     alpha=0.25,
-#     color='C1',
+# X_train, X_test, y_train, y_test = train_test_split(
+#     # fd_valence,
+#     # fd_arousal,    
+#     fd,
+#     kmeans_pcscore.labels_,
+#     test_size=0.25,
+#     shuffle=True,
+#     stratify=kmeans_pcscore.labels_,
+#     random_state=0,
 # )
 
-radius_nn = RadiusNeighborsClassifier(radius=radius, weights='distance')
-radius_nn.fit(X_train, y_train)
+
+# radius = 0.5
+# sample = X_test[0]  # Center of the ball
+
+# # fig = X_train.plot(group=y_train, group_colors=['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6'])
+
+# # Plot ball
+# # sample.plot(fig=fig, color='red', linewidth=3)
+# # lower = sample - radius
+# # upper = sample + radius
+# # fig.axes[0].fill_between(
+# #     sample.grid_points[0],
+# #     lower.data_matrix.flatten(),
+# #     upper.data_matrix[0].flatten(),
+# #     alpha=0.25,
+# #     color='C1',
+# # )
+# # plt.show()
 
 
-pred = radius_nn.predict(X_test)
-# print(pred)
+# # Creation of pairwise distance
+# l_inf = PairwiseMetric(linf_distance)
+# distances = l_inf(sample, X_train)[0]  # L_inf distances to 'sample'
+
+# # # Plot samples in the ball
+# # fig = X_train[distances <= radius].plot(color='C0')
+# # sample.plot(fig=fig, color='red', linewidth=3)
+# # fig.axes[0].fill_between(
+# #     sample.grid_points[0],
+# #     lower.data_matrix.flatten(),
+# #     upper.data_matrix[0].flatten(),
+# #     alpha=0.25,
+# #     color='C1',
+# # )
+
+# radius_nn = RadiusNeighborsClassifier(radius=radius, weights='distance')
+# radius_nn.fit(X_train, y_train)
 
 
-test_score = radius_nn.score(X_test, y_test)
-print(test_score)
+# pred = radius_nn.predict(X_test)
+# # print(pred)
+
+
+# test_score = radius_nn.score(X_test, y_test)
+# print(test_score)
 
 
 
@@ -332,8 +442,14 @@ print(test_score)
 # axs[1].plot(time, mean_arousal)
 
 
-# fd_valence.plot(group=kmeans_pcscore.labels_, group_colors=['red', 'blue', 'green', 'yellow'])
-# fd_arousal.plot(group=kmeans_pcscore.labels_, group_colors=['red', 'blue', 'green', 'yellow'])
+# fd_valence.plot(group=kmeans_pcscore.labels_, group_colors=['red', 'blue', 'green', 'yellow', 'black', 'orange', 'lightgreen', 'lightblue'])
+# fd_arousal.plot(group=kmeans_pcscore.labels_, group_colors=['red', 'blue', 'green', 'yellow', 'black', 'orange', 'lightgreen', 'lightblue'])
+# plt.show()
+
+
+# fd_valence.plot(group=kmeans_pcscore.labels_, group_colors=['red', 'blue', 'green', 'yellow', 'black', 'orange'])
+# fd_arousal.plot(group=kmeans_pcscore.labels_, group_colors=['red', 'blue', 'green', 'yellow', 'black', 'orange'])
+# plt.show()
 
 
 # fd_valence.plot(group=kmeans_pcscore.labels_, group_colors=['red', 'blue', 'green', 'yellow', 'black'])
@@ -355,21 +471,21 @@ print(test_score)
 
 
 
-import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.model_selection import GridSearchCV, train_test_split
+# import matplotlib.pyplot as plt
+# import numpy as np
+# from sklearn.model_selection import GridSearchCV, train_test_split
 
-import skfda
-from skfda.ml.classification import KNeighborsClassifier
+# import skfda
+# from skfda.ml.classification import KNeighborsClassifier
 
 
-knn = KNeighborsClassifier(n_neighbors=3)
-knn.fit(X_train, y_train)
+# knn = KNeighborsClassifier(n_neighbors=6)
+# knn.fit(X_train, y_train)
 
-pred = knn.predict(X_test)
-# print(pred)
+# pred = knn.predict(X_test)
+# # print(pred)
 
-score = knn.score(X_test, y_test)
-print(score)
+# score = knn.score(X_test, y_test)
+# print(score)
 
 
