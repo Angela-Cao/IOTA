@@ -26,68 +26,17 @@ nrc_set['Valence'] = (nrc_set['Valence']-0.5)*2
 nrc_set['Arousal'] = (nrc_set['Arousal']-0.5)*2
 
 
+
+
+
 # Convert two columns to a dictionary
 d = nrc_set.set_index('Word').T.to_dict('list')
 
 
-def window_moving(lst, window_size, step_size):
-    windows = []
-    for i in range(0, len(lst), step_size):
-        end = i + window_size
-        if end > len(lst):
-            break
-        windows.append(lst[i:end])
-    return windows
 
+def v(word):
+  return(d[word][0])
 
-
-def window_valence(window):
-  w_size = len(window)
-  sum = 0  
-  k = 0
-  for i in range(0,w_size):
-    if window[i] in d.keys():
-        sum = sum+d[window[i]][0]
-        k = k+1
-#  return(step_size*sum/w_size)
-  return(sum/max(1,k))
-
-
-
-
-def window_arousal(window):
-  w_size = len(window)
-  sum = 0  
-  k = 0 
-  for i in range(0,w_size):
-    if window[i] in d.keys():
-        sum = sum+d[window[i]][1]
-        k = k+1 
-#  return(step_size*sum/w_size)
-  return(sum/max(1,k))
-
-
-def window_valence_2(window):
-  max = 0
-  for i in range(0,len(window)):
-    if window[i] in d.keys():
-      v_val = d[window[i]][0]
-      if(np.abs(v_val) >max):
-        max = v_val        
-  if max ==0:
-    max = None      
-  return(max)
-
-def window_arousal_2(window):
-  max = 0
-  for i in range(0,len(window)):
-    if window[i] in d.keys():
-      v_val = d[window[i]][1]
-      if(np.abs(v_val) >max):
-        max = v_val
-  if max ==0:
-    max = None      
-  return(max)
 
 
 def time_grids():
@@ -115,30 +64,14 @@ def text2va(text):
         valences.append(None)
         arousal.append(None)  
   df = pd.DataFrame({'words':words, 'valence': valences, 'arousal': arousal})
-  # print(df)
-  return(df,count)
-
-
-def text2va_window_smoothing(text):   
-  tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-  words = tokenizer.tokenize(text)
-  windows = window_moving(words, 20, 2)
-  count = len(windows)
-  valences = []
-  arousal = []
-  for i in range(0,len(windows)):
-    print(windows[i])
-    valences.append(window_valence_2(windows[i]))
-    arousal.append(window_arousal_2(windows[i]))
-  df = pd.DataFrame({'valence': valences, 'arousal': arousal})
-  # print(df)
+  print(df)
   return(df,count)
 
 
 
 def smooth_text_va(text_va):
 
-  bandwidth = 20
+  bandwidth = 30
   
   # time = time_grids()
   # count = len(time)
@@ -166,54 +99,12 @@ def smooth_text_va(text_va):
   return(nw.transform(fd_text))
 
 
-import math
-def match_music_new(text):
-  # df_va,count = text2va(text)
-  df_va,count = text2va_window_smoothing(text)
-  # print(len(df_va))
-  valence_data = pickle.load(open("./data/valence_data_unscaled.pkl", "rb"))
-  arousal_data = pickle.load(open("./data/arousal_data_unscaled.pkl", "rb"))
 
-  text_l = len(df_va['valence'])
-  df_valence = smooth_valence(df_va)
-  df_arousal = smooth_arousal(df_va)
-  valence = df_valence.data_matrix[0,:,:]
-  arousal = df_arousal.data_matrix[0,:,:]  
-
-  print(valence)
-  print(arousal)
-
-  if text_l<60:
-    text_len = text_l
-  else:
-    freq = math.floor(text_l/60)
-    v_points = []
-    a_points = []
-    for i in range(0, text_l, freq):
-      v_points.append(valence[i])
-      a_points.append(arousal[i])
-    text_len = len(v_points)
-
-  num_rows = valence_data.shape[0]
-  min = 100000 
-  k = -1
-  for i in range(0, num_rows):
-    valence_value = valence_data.iloc[i][1:(text_len+1)]
-    dist_valence = dist(v_points,valence_value)
-    arousal_value = arousal_data.iloc[i][1:(text_len+1)]
-    dist_arousal = dist(a_points,arousal_value)
-    dist_current = dist_valence+dist_arousal 
-    if(dist_current<min):
-      min = dist_current
-      k = i
-  return(i, arousal_data.iloc[k][0])
 
 def match_music(text):
-  df_va,count = text2va(text)
-  # df_va,count = text2va_window_smoothing(text)
-  # print(len(df_va))
-  # text_l = len(df_va)
-  text_l = len(df_va['valence'])
+  df_va = text2va(text)
+  print(len(df_va))
+  text_l = len(df_va)
   if text_l<60:
     text_len = text_l
   else:
@@ -222,13 +113,10 @@ def match_music(text):
   df_arousal = smooth_arousal(df_va[0:text_len])
   df_valence = df_valence.data_matrix[0][0]
   df_arousal = df_arousal.data_matrix[0][0]
-  # kmeans_valence = pickle.load(open("./models/kmeans_valence.pkl", 'rb'))
-  # kmeans_arousal = pickle.load(open("./models/kmeans_arousal.pkl", 'rb'))            
-  # valence_data = pickle.load(open("./data/valence_data.pkl", "rb"))
-  # arousal_data = pickle.load(open("./data/arousal_data.pkl", "rb"))
-  valence_data = pickle.load(open("./data/valence_data_unscaled.pkl", "rb"))
-  arousal_data = pickle.load(open("./data/arousal_data_unscaled.pkl", "rb"))
-
+  kmeans_valence = pickle.load(open("./models/kmeans_valence.pkl", 'rb'))
+  kmeans_arousal = pickle.load(open("./models/kmeans_arousal.pkl", 'rb'))            
+  valence_data = pickle.load(open("./data/valence_data.pkl", "rb"))
+  arousal_data = pickle.load(open("./data/arousal_data.pkl", "rb"))
   num_rows = valence_data.shape[0]
   min = 100000 
   k = -1
@@ -304,7 +192,8 @@ def plot_music_va(i):
 
 
 def plot_valence_arousal(df_va):
-  nrow = len(df_va['valence'])  
+  nrow = len(df_va['words'])  
+  print(nrow)
   time = range(0,nrow)
   df_valence = smooth_valence(df_va)  
   df_arousal = smooth_arousal(df_va)  
@@ -336,10 +225,31 @@ def plot_smooth_va(df_va):
 
 # print(df_valence.data_matrix[0][0])
 
+
+
 # file_id = match_music("today is a snowing day. We stay at home working and studying")
 # print(file_id)
 
 # # file_name = "./data/the_happy_family.txt"
+# file_name = "./data/story_3pigs.txt"
+# with open(file_name, 'r') as file:
+#   text = file.read()
+#   df_va,count = text2va(text)
+#   # plot_va(df_va)  
+#   print(count)
+#   df_valence = smooth_valence(df_va)  
+#   print(df_valence)
+#   # print(df_valence.data_matrix[0][0])
+#   # df_valence.plot()
+#   # df_arousal = smooth_arousal(df_va)  
+#   # df_arousal.plot()
+#   plot_valence_arousal(df_va)
+#   plt.show()
+
+
+
+  
+
 
 #   plt.show()
   # print(output_points_v)
@@ -353,16 +263,6 @@ def plot_smooth_va(df_va):
 #   print(file_id)
 # print(file_id)
 
-# file_name = "./data/the_happy_family.txt"
-# with open(file_name, 'r') as file:
-#   text = file.read()
-#   df_va,count = text2va(text)
-#   plot_va(df_va)
-#   print(df_va)
-
-#   file_id = match_music(text)
-#   print(file_id)
-# print(file_id)
 
 
 
@@ -415,127 +315,19 @@ def plot_smooth_va(df_va):
 
 
 
-words = ['tense', 'distressed', 'frustrated', 'depressed', 'sad', 'miserable', 'sad', 'gloomy', 'afraid', 
-         'alarmed', 'angry', 'annoyed', 
-         'bored', 'tired', 'drowsy', 'sleepy',
-         'aroused', 'excited', 'astonished', 'delighted', 'glad', 'pleased', 'happy', 'satisfied', 
-         'content', 'relaxed', 'tranquil', 'ease', 'calm']
 
-valence = []
-arousal = []
-for word in words:  
-  temp = d[word]
-  valence.append(temp[0])
-  arousal.append(temp[1])
-
-
-# print(valence)
-# print(arousal)
-  
-# df = pd.DataFrame({'words':words, 'valence':valence, 'arousal':arousal})
-# print(df)
-
-# # print(d.keys())
-
-# # Create a scatter plot
-# plt.scatter(valence, arousal)
-
-# # Set x and y limits centered around 0
-# plt.xlim(-1.2, 1.2)
-# plt.ylim(-1.2, 1.2)
-
-# # Add a horizontal and vertical line at 0
-# plt.axhline(y=0, color='k')
-# plt.axvline(x=0, color='k')
-
-# # Add labels for x and y axes
-# plt.xlabel('Valence')
-# plt.ylabel('Arousal')
-
-
-# # # Add text labels for each point
-# for i  in range(0,len(words)):
-#     plt.text(valence[i]-0.1, arousal[i]+0.03, words[i],fontsize=12, color='black', fontweight='bold')  
-# # Show the plot
-# # plt.show()
-
-
-
-def plot_va_with_words(df_va):
-  nrow = len(df_va['valence'])  
-  time = range(0,nrow)
-  df_valence = smooth_valence(df_va)  
-  df_arousal = smooth_arousal(df_va)  
-
-  # Create a scatter plot
-  fig, axs = plt.subplots(1, 1, figsize=(10, 5))
-  plt.plot(valence, arousal,'bo')
-  v_vals = df_valence.data_matrix[0,:,:]
-  a_vals = df_arousal.data_matrix[0,:,:]
-  plt.plot(v_vals, a_vals, 'red', linewidth='4') 
-
-  # plt.arrow(v_vals[len(v_vals)-2], a_vals[len(a_vals)-2],v_vals[len(v_vals)-1]-v_vals[len(v_vals)-2], a_vals[len(a_vals)-1]-a_vals[len(a_vals)-2],  width=0.2)
-
-  # Set x and y limits centered around 0
-  plt.xlim(-1.2, 1.2)
-  plt.ylim(-1.2, 1.2)
-
-  # Add a horizontal and vertical line at 0
-  plt.axhline(y=0, color='k')
-  plt.axvline(x=0, color='k')
-
-  # Add labels for x and y axes
-  plt.xlabel('Valence')
-  plt.ylabel('Arousal')
-  # # Add text labels for each point
-  for i  in range(0,len(words)):
-    plt.text(valence[i]-0.1, arousal[i]+0.03, words[i],fontsize=12, color='black', fontweight='bold')  
-  return(fig)
-  
+   
 
 
 
 
 
-# file_name = "./data/the_happy_family.txt"
-# # file_name = "./data/story_3pigs.txt"
-# file_name = "./data/shortStory.txt"
-# file_name = "./data/100west.txt"
-# file_name = "./data/thrillStory.txt"
-# file_name = "./data/20131113.txt"
 
 
 
-# file_name = "./data/wolflamb.txt"
-# with open(file_name, 'r') as file:
-#   text = file.read()
-#   # tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-#   # words = tokenizer.tokenize(text)
-#   # # print(words)
-#   # windows = window_moving(words, 8, 2)
-#   # print(windows)
-#   # # print(len(windows))
-#   # valences = []
-#   # arousal = []
-#   # for i in range(0,len(windows)):
-#   #   print(windows[i])
-#   #   valences.append(window_valence(windows[i]))
-#   #   arousal.append(window_arousal(windows[i]))
-#   # df = pd.DataFrame({'valence': valences, 'arousal': arousal})
-#   # print(df)
-#   # df_va,count = text2va(text)
-#   df_va,count = text2va_window_smoothing(text)
 
 
-#   # print(count)
-#   # df_valence = smooth_valence(df_va)  
-#   # print(df_valence)
-#   # # print(df_valence.data_matrix[0][0])
-#   # df_valence.plot()
-#   # df_arousal = smooth_arousal(df_va)  
-#   # df_arousal.plot()
-#   plot_va_with_words(df_va)
-#   plt.show()
+
 
 
 
