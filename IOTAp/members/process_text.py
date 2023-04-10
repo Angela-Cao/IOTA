@@ -279,6 +279,7 @@ def plot_music_va(i):
   axs[1].plot(time, smoothed_arousal_value, linewidth='4', color='red')
   axs[1].set_ylabel('Arousal')
   axs[1].set_xlabel('Time')
+  plt.savefig('va_music_emotion.png', dpi=300) 
   return(fig)
 
 
@@ -292,13 +293,14 @@ def plot_valence_arousal(df_va):
   axs[0].plot(time,df_va["valence"][0:nrow],'bo')
   axs[0].plot(df_valence.grid_points[0], df_valence.data_matrix[0,:,:], linewidth='4', color='red')
   # axs[0].set_title('Valence')
-  axs[0].set_xlabel('Word Index')
+  # axs[0].set_xlabel('Word Index')
   axs[0].set_ylabel('Valence')
   axs[1].plot(time,df_va["arousal"][0:nrow],'bo')
   axs[1].plot(df_arousal.grid_points[0],df_arousal.data_matrix[0,:,:], linewidth='4', color='red')
   # axs[1].set_title('Arousal')
   axs[1].set_xlabel('Word Index')
   axs[1].set_ylabel('Arousal')
+  plt.savefig('va_text_timevarying.png', dpi=300) 
   return(fig)
 
 
@@ -352,35 +354,6 @@ def plot_smooth_va(df_va):
 # playsound('./data/MEMD_audio/'+str(round(file_id))+'.mp3')
 
 
-
-# from aip import AipSpeech
-
-
-# import ffmpeg
-# import sys
-# import os
-
-# """ 你的 APPID AK SK """
-# APP_ID = '24528497'
-# API_KEY = '377orEuzgLGooAo3VaCYdeYk'
-# SECRET_KEY = 'Y35c7d7UwCPGCCcNCBSHfRPpHcw2cdYw'
-
-# client = AipSpeech(APP_ID, API_KEY, SECRET_KEY)
-
-# def sentence2audio(sentence,filename):
-#     result  = client.synthesis(sentence, 'En', 1, {
-#         'vol': 8,
-#         'per':0,
-#         'pit':4,
-#         'speed':7,
-#     })
-    
-#     # 识别正确返回语音二进制 错误则返回dict 参照下面错误码
-#     if not isinstance(result, dict):
-#         with open(filename, 'wb') as f:
-#             f.write(result)
-
-
 # sentence = 'Along time ago, there lived an old poet, a thoroughly kind old poet. As he was sitting one evening in his room, a dreadful storm arose without, and the rain streamed down from heaven; but the old poet sat warm and comfortable in his chimney-corner, where the fire blazed and the roasting apple hissed.'
 # filename = './data/temp/1.mp3'
 # sentence2audio(sentence,filename)
@@ -395,11 +368,49 @@ def plot_smooth_va(df_va):
 
 
 
-words = ['tense', 'distressed', 'frustrated', 'depressed', 'sad', 'miserable', 'sad', 'gloomy', 'afraid', 
-         'alarmed', 'angry', 'annoyed', 
-         'bored', 'tired', 'drowsy', 'sleepy',
-         'aroused', 'excited', 'astonished', 'delighted', 'glad', 'pleased', 'happy', 'satisfied', 
-         'content', 'relaxed', 'tranquil', 'ease', 'calm']
+words = [
+  # 'tense', 
+        'distressed',
+        'frustrated', 
+        'depressed', 
+        'sad', 
+        'miserable',
+        'gloomy', 
+        'afraid', 
+        'alarmed', 
+        'angry', 
+        'annoyed', 
+        'bored', 
+        'tired', 
+        'drowsy', 
+        'sleepy',
+        'aroused', 
+        'excited', 
+        # 'astonished',
+        'astonish',  
+        'delighted', 
+        'glad', 
+        'pleased', 
+        'happy', 
+        'satisfied', 
+        'content', 
+        'relaxed', 
+        'tranquil', 
+#        'ease', 
+         'easy', 
+        'calm',
+        'concern',
+        'desire',
+        'empathy',
+        'remorse',
+        # 'sorrow',
+        'thrill',
+        'rage',
+        'warmth',
+        # 'love',
+        'joy',
+        'passion'
+        ]
 
 valence = []
 arousal = []
@@ -468,13 +479,38 @@ def plot_va_with_words(df_va):
   plt.xlabel('Valence')
   plt.ylabel('Arousal')
   # # Add text labels for each point
-  for i  in range(0,len(words)):
-    plt.text(valence[i]-0.1, arousal[i]+0.03, words[i],fontsize=12, color='black', fontweight='bold')  
+  for i  in range(0,len(words)):   
+    if words[i]=='tranquil':
+      plt.text(valence[i]+0.01, arousal[i]+0.02, words[i],fontsize=12, color='black')  #, fontweight='bold'
+    else:
+      plt.text(valence[i]-0.1, arousal[i]+0.03, words[i],fontsize=12, color='black')  #, fontweight='bold'
+  plt.savefig('va_text_emotion.png', dpi=300)    
   return(fig)
   
 
 
+def generate_va():
+   # Create a scatter plot
+  fig, axs = plt.subplots(1, 1, figsize=(10, 8))
+  plt.plot(valence, arousal,'bo')
+  plt.xlim(-1.2, 1.2)
+  plt.ylim(-1.2, 1.2)
+  # Add a horizontal and vertical line at 0
+  plt.axhline(y=0, color='k')
+  plt.axvline(x=0, color='k')
+  # Add labels for x and y axes
+  plt.xlabel('Valence', fontsize=18)
+  plt.ylabel('Arousal', fontsize=18)
+  # # Add text labels for each point
+  for i  in range(0,len(words)):   
+    if words[i]=='tranquil':
+      plt.text(valence[i]+0.01, arousal[i]+0.02, words[i],fontsize=12, color='black', fontweight='bold')  #, fontweight='bold'
+    else:
+      plt.text(valence[i]-0.1, arousal[i]+0.03, words[i],fontsize=12, color='black', fontweight='bold')  #, fontweight='bold'
+  # plt.savefig('va.pdf')
+  plt.savefig('va.png', dpi=300)
 
+generate_va()
 
 
 # file_name = "./data/the_happy_family.txt"

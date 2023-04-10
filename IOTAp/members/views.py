@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.template import loader
 
 def members(request):
-  template = loader.get_template('myfirst.html')
+  template = loader.get_template('index.html')
   return HttpResponse(template.render())
 
 from django.shortcuts import render
@@ -10,8 +10,8 @@ from django.shortcuts import render
 def second_page(request):
     return render(request, 'second_page.html')
 
-def myfirst(request):
-    return render(request, 'myfirst.html')
+def index(request):
+    return render(request, 'index.html')
 
 
 from django.shortcuts import render
@@ -81,7 +81,7 @@ from .process_music import (
 )
 
 def members(request):
-  template = loader.get_template('myfirst.html')
+  template = loader.get_template('index.html')
   return HttpResponse(template.render())
 
 from django.shortcuts import render
@@ -89,8 +89,8 @@ from django.shortcuts import render
 def second_page(request):
     return render(request, 'second_page.html')
 
-def myfirst(request):
-    return render(request, 'myfirst.html')
+def index(request):
+    return render(request, 'index.html')
 
 
 class CustomerView(viewsets.ModelViewSet): 

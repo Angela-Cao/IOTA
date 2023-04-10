@@ -19,15 +19,15 @@
         <h1>IOTA</h1>
 
         <div class="playComponent">
-            <img src="../static/bar.svg" alt="music playing bar" />
+            <img src="{% static 'bar.svg' %}" alt="music playing bar" />
 
             <div class="playerButtons">
-                <img src="../static/ff-left.svg" alt="fast forward left button" class="ffLeft" />
+                <img src="{% static 'ff-left.svg' %}" alt="fast forward left button" class="ffLeft" />
                 <a href="{% url 'TextView' %}">
-                    <img src="../static/playbutton.svg" alt="play button" class="play_button" />
+                    <img src="{% static 'playbutton.svg' %}" alt="play button" class="play_button" />
                 </a>
 
-                <img src="../static/ff-right.svg" alt="fast forward right button" class="ffRight" />
+                <img src="{% static 'ff-right.svg' %}" alt="fast forward right button" class="ffRight" />
             </div>
         </div>
     </div>

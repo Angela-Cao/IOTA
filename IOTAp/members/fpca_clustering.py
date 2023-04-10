@@ -227,12 +227,50 @@ nrc_set['Arousal'] = (nrc_set['Arousal']-0.5)*2
 # Convert two columns to a dictionary
 d = nrc_set.set_index('Word').T.to_dict('list')
 
-words = ['tense', 'distressed', 'frustrated', 'depressed', 'sad', 'miserable', 'sad', 'gloomy', 'afraid', 
-         'alarmed', 'angry', 'annoyed', 
-         'bored', 'tired', 'drowsy', 'sleepy',
-         'aroused', 'excited', 'astonished', 'delighted', 'glad', 'pleased', 'happy', 'satisfied', 
-         'content', 'relaxed', 'tranquil', 'ease', 'calm']
 
+words = [
+  # 'tense', 
+        'distressed',
+        'frustrated', 
+        'depressed', 
+        'sad', 
+        'miserable',
+        'gloomy', 
+        'afraid', 
+        'alarmed', 
+        'angry', 
+        'annoyed', 
+        'bored', 
+        'tired', 
+        'drowsy', 
+        'sleepy',
+        'aroused', 
+        'excited', 
+        # 'astonished',
+        'astonish',  
+        'delighted', 
+        'glad', 
+        'pleased', 
+        'happy', 
+        'satisfied', 
+        'content', 
+        'relaxed', 
+        'tranquil', 
+#        'ease', 
+         'easy', 
+        'calm',
+        'concern',
+        'desire',
+        'empathy',
+        'remorse',
+        # 'sorrow',
+        'thrill',
+        'rage',
+        'warmth',
+        # 'love',
+        'joy',
+        'passion'
+        ]
 valence = []
 arousal = []
 for word in words:  
@@ -245,14 +283,14 @@ def show_cluster(cluster_index):
   # fig, axs = plt.subplots(1, 2, figsize=(10, 5))
 
   mean_valence = skfda.exploratory.stats.mean(fd_valence[kmeans_pcscore.labels_==cluster_index])  
-  fig1 = mean_valence.plot()
-
+  fig1 = mean_valence.plot(linewidth='4', color='blue')
   mean_arousal = skfda.exploratory.stats.mean(fd_arousal[kmeans_pcscore.labels_==cluster_index])
-  mean_arousal.plot(fig1)  
-  plt.xlabel('Time')  
+  mean_arousal.plot(fig1, linewidth='4', color='red')  
+  plt.xlabel('Time', fontsize=18)  
   # plt.ylabel('Valence/Arousal')  
-  plt.legend(['Valence', 'Arousal'])
-  plt.savefig('Cluster'+str(cluster_index)+'.pdf')  
+  plt.legend(['Valence', 'Arousal'], fontsize=18)
+  # plt.savefig('Cluster'+str(cluster_index)+'.pdf') 
+  plt.savefig('Cluster'+str(cluster_index)+'.png', dpi=300)   
   # plt.show()  
   # return(fig)
 
@@ -293,31 +331,32 @@ def show_cluster_2dim(cluster_index):
   # mean_valence = skfda.exploratory.stats.depth_based_median(fd_valence[kmeans_pcscore.labels_==cluster_index])  
   mean_arousal = skfda.exploratory.stats.mean(fd_arousal[kmeans_pcscore.labels_==cluster_index])
   # mean_arousal = skfda.exploratory.stats.depth_based_median(fd_valence[kmeans_pcscore.labels_==cluster_index])  
-
+  fig, axs = plt.subplots(1, 1, figsize=(10, 8))
   # print(mean_valence.data_matrix[0])
   # print(mean_arousal.data_matrix[0])
-  plt.plot(mean_valence.data_matrix[0], mean_arousal.data_matrix[0])
+  plt.plot(mean_valence.data_matrix[0], mean_arousal.data_matrix[0],linewidth='4')
   plt.xlim([0.2, 0.8])
   plt.ylim([0.2, 0.8])  
-  plt.xlabel('Valence')  
-  plt.ylabel('Arousal')  
+  # plt.xlabel('Valence')  
+  # plt.ylabel('Arousal')  
   # Set x and y limits centered around 0
-  plt.xlim(-1.2, 1.2)
-  plt.ylim(-1.2, 1.2)
+  # plt.xlim(-1.2, 1.2)
+  # plt.ylim(-1.2, 1.2)
 
   # Add a horizontal and vertical line at 0
   plt.axhline(y=0, color='k')
   plt.axvline(x=0, color='k')
 
   # Add labels for x and y axes
-  plt.xlabel('Valence')
-  plt.ylabel('Arousal')
+  plt.xlabel('Valence', fontsize=18)
+  plt.ylabel('Arousal', fontsize=18)
   # # Add text labels for each point
   for i  in range(0,len(words)):
     plt.text(valence[i]-0.1, arousal[i]+0.03, words[i],fontsize=12, color='black', fontweight='bold')  
 
   # plt.legend(['Valence', 'Arousal'])
-  plt.savefig('Cluster'+str(cluster_index)+'_2dim.pdf')  
+  # plt.savefig('Cluster'+str(cluster_index)+'_2dim.pdf') 
+  plt.savefig('Cluster'+str(cluster_index)+'_2dim.png', dpi=300)   
   # plt.savefig('Cluster'+str(cluster_index)+'_2dim_median.pdf')  
 
   # plt.show()
@@ -336,23 +375,23 @@ def show_clusters(cluster_index):
   # fig, axs = plt.subplots(1, 2, figsize=(10, 5))
 
   # plt.plot(valence, arousal,'bo', linewidth=0.5)
-  plt.plot(mean_valence.data_matrix[0], mean_arousal.data_matrix[0], linewidth='2')
-  plt.xlabel('Valence')  
-  plt.ylabel('Arousal')  
+  plt.plot(mean_valence.data_matrix[0], mean_arousal.data_matrix[0], linewidth='4')
+  plt.xlabel('Valence', fontsize=12)  
+  plt.ylabel('Arousal', fontsize=12)  
   # Set x and y limits centered around 0
-  plt.xlim(-1, 1)
-  plt.ylim(-1, 1)
+  plt.xlim(-0.5, 0.5)
+  plt.ylim(-0.5, 0.5)
 
   # Add a horizontal and vertical line at 0
   plt.axhline(y=0, color='k')
   plt.axvline(x=0, color='k')
 
   # Add labels for x and y axes
-  plt.xlabel('Valence')
-  plt.ylabel('Arousal')
+  # plt.xlabel('Valence')
+  # plt.ylabel('Arousal')
   # # Add text labels for each point
-  for i  in range(0,len(words)):
-    plt.text(valence[i], arousal[i], words[i],fontsize=6, color='black')  
+  # for i  in range(0,len(words)):
+  #   plt.text(valence[i], arousal[i], words[i],fontsize=6, color='black')  
 
   # plt.legend(['Valence', 'Arousal'])
   # plt.savefig('Cluster'+str(cluster_index)+'_2dim.pdf')  
@@ -362,7 +401,7 @@ def show_clusters(cluster_index):
 fig, axs = plt.subplots(1, 1, figsize=(6, 6))
 for i in range(0,n_clusters):
   show_clusters(i)
-plt.savefig('Clusters_2dim.pdf')  
+plt.savefig('Clusters_2dim.png', dpi=300)  
 
 
 # from sklearn.model_selection import train_test_split
