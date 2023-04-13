@@ -13,6 +13,8 @@ def second_page(request):
 def index(request):
     return render(request, 'index.html')
 
+def spotify_home(request):
+    return render(request, 'spotify_home.html')
 
 from django.shortcuts import render
 
@@ -24,10 +26,6 @@ def second_page(request):
     else:
         # If the user hasn't submitted the form yet, render the template without any text
         return render(request, 'second_page.html')
-
-
-
-
 
 
 from django.http import HttpResponse
@@ -62,6 +60,9 @@ import io, base64
 from django.db.models.functions import TruncDay
 from matplotlib.ticker import LinearLocator
 
+from .LDA import (
+     match_song,
+)
 
 from .process_text import (
      text2va,
@@ -129,36 +130,48 @@ def TextView(request):
         form=TextForm(request.POST or None)
         if form.is_valid():
             Text = form.cleaned_data['text']
-            df=pd.DataFrame({'text':[Text]})
-            words = our_tokenizer(Text)
+            choice = form.cleaned_data['choice']
+            # df=pd.DataFrame({'text':[Text]})
+            if choice == 'DEAM':
+                words = our_tokenizer(Text)
             # df_va,count = text2va_window_smoothing(words)
-            df_va,count = text2va(words)
-            music_index,file_index = match_music(df_va)            
-            audio_file = 'MEMD_audio/'+str(round(file_index))+'.mp3'
+                df_va,count = text2va(words)
+                music_index,file_index = match_music(df_va)            
+                audio_file = 'MEMD_audio/'+str(round(file_index))+'.mp3'
             
 
-            fig = plot_valence_arousal(df_va)
-            fig_va = plot_va_with_words(df_va)
+                fig = plot_valence_arousal(df_va)
+                fig_va = plot_va_with_words(df_va)
 
-            flike_va = io.BytesIO()
-            fig_va.savefig(flike_va)
-            b64_va = base64.b64encode(flike_va.getvalue()).decode()
+                flike_va = io.BytesIO()
+                fig_va.savefig(flike_va)
+                b64_va = base64.b64encode(flike_va.getvalue()).decode()
             
             # fig_music = plot_va_with_words(df_va)
-            fig_music = plot_music_va(music_index)
+                fig_music = plot_music_va(music_index)
 
             # fig, ax = plt.subplots(figsize=(10,4))
             # ax.plot([0, 1, 3, 4, 5], [0, 1, 3, 4, 5], '--bo')
-            flike = io.BytesIO()
-            fig.savefig(flike)
-            b64 = base64.b64encode(flike.getvalue()).decode()
+                flike = io.BytesIO()
+                fig.savefig(flike)
+                b64 = base64.b64encode(flike.getvalue()).decode()
 
-            flike_music = io.BytesIO()
-            fig_music.savefig(flike_music)
-            b64_music = base64.b64encode(flike_music.getvalue()).decode()
-        
+                flike_music = io.BytesIO()
+                fig_music.savefig(flike_music)
+                b64_music = base64.b64encode(flike_music.getvalue()).decode()        
             # playsound(audio_file) 
-            return render(request, 'status.html', {'Text':Text, "data": audio_file, "chart": b64, "chart_va": b64_va, "chart_music": b64_music})                                    
+                return render(request, 'status.html', {'Text':Text, "data": audio_file, "chart": b64, "chart_va": b64_va, "chart_music": b64_music})                                    
+            else:
+                words = our_tokenizer(Text)
+                df_va,count = text2va(words)                
+                fig_va = plot_va_with_words(df_va)
+
+                flike_va = io.BytesIO()
+                fig_va.savefig(flike_va)
+                b64_va = base64.b64encode(flike_va.getvalue()).decode()
+
+                songTitle, artist, song_v, song_a, link, topic = match_song(Text)
+                return render(request, 'spotify.html', {'Text':Text, "chart_va":b64_va, "songTitle": songTitle, "artist": artist, "song_v": song_v, "song_a": song_a, "link":link, "topic": topic})                                     
     form=TextForm()
     return render(request, 'second_page.html', {'form':form})
 
